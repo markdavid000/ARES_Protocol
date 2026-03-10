@@ -7,7 +7,7 @@ interface IDistributor {
 
     function updateRoot(bytes32 _newRoot) external;
 
-    function claimReward(bytes32 _proposalId) external;
+    function claimReward(address _receiver, uint _amount, bytes32[] calldata _proof) external;
 
     function hasClaimedReward(address _recipient) external view returns (bool);
 
