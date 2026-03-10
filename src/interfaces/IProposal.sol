@@ -11,7 +11,7 @@ interface IProposal {
     enum ProposalStatus {
         QUEUED,
         EXECUTED,
-        CANCEL
+        CANCELED
     }
 
     struct Proposal {
