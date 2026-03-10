@@ -2,7 +2,8 @@
 pragma solidity ^0.8.20;
 
 interface ITimelockEngine {
-    enum TimelockedStatus {
+    enum TimelockedState {
+        PENDING,
         QUEUED,
         EXECUTED,
         CANCELED
@@ -11,12 +12,12 @@ interface ITimelockEngine {
     struct Timelocked {
         bytes32 proposalId;
         uint startedAt;
-        TimelockedStatus timelockStatus;
+        TimelockedState timelockStatus;
     }
 
-    event TimelockedQueued(bytes32 indexed proposalId, uint startedAt);
-    event TimelockedExecuted(bytes32 indexed proposalId, uint startedAt);
-    event TimelockedCanceled(bytes32 indexed proposalId, uint startedAt);
+    event TimelockedQueued(bytes32 indexed proposalId, TimelockedState timelockState);
+    event TimelockedExecuted(bytes32 indexed proposalId, TimelockedState timelockState);
+    event TimelockedCanceled(bytes32 indexed proposalId, TimelockedState timelockState);
 
     function getTimestamp(bytes32 _proposalId) external view returns (uint);
 

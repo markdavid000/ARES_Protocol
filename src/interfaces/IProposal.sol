@@ -8,13 +8,15 @@ interface IProposal {
         UPGRADE
     }
 
-    enum ProposalStatus {
+    enum ProposalState {
+        PENDING,
         QUEUED,
         EXECUTED,
         CANCELED
     }
 
     struct Proposal {
+        bytes32 proposalId;
         address target;
         bytes data;
         uint value;
@@ -22,15 +24,15 @@ interface IProposal {
         uint time_created;
         string desc;
         ProposalType proposal_type;
-        ProposalStatus proposal_status;
+        ProposalState proposal_status;
     }
 
-    event ProposalCreated(bytes32 indexed proposalId, ProposalType indexed proposal_type, ProposalStatus indexed proposal_status);
-    event ProposalExecuted(bytes32 indexed proposalId, ProposalStatus indexed proposal_status);
-    event ProposalQueued(bytes32 indexed proposalId, ProposalStatus indexed proposal_status);
-    event ProposalCanceled(bytes32 indexed proposalId, ProposalStatus indexed proposal_status);
+    event ProposalCreated(bytes32 indexed proposalId, ProposalType indexed proposal_type, ProposalState indexed proposal_status);
+    event ProposalExecuted(bytes32 indexed proposalId, ProposalState indexed proposal_status);
+    event ProposalQueued(bytes32 indexed proposalId, ProposalState indexed proposal_status);
+    event ProposalCanceled(bytes32 indexed proposalId, ProposalState indexed proposal_status);
 
-    function createProposal(address _target, bytes calldata _data, uint _value, string memory _desc, ProposalType proposal_type) external returns (bytes32);
+    function createProposal(address _target, bytes calldata _data, uint _value, string memory _desc, ProposalType proposal_type) external payable returns (bytes32);
 
     function getProposalById(bytes32 _proposalId) external returns (Proposal memory);
 
