@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 library AttackGuard {
     struct Snapshot {
-        mapping(bytes32 => uint256) proposalBlockNumber;
+        mapping(bytes32 => uint256) proposalBlock;
 
         mapping(address => mapping(uint256 => uint256)) balanceAt;
     }
@@ -45,7 +45,7 @@ library AttackGuard {
         Snapshot storage _self,
         bytes32 _proposalId
     ) internal {
-        _self.proposalBlockNumber[_proposalId] = block.number;
+        _self.proposalBlock[_proposalId] = block.number;
     }
 
     function logBalance(
@@ -62,7 +62,7 @@ library AttackGuard {
         address _user,
         bytes32 _proposalId
     ) internal view returns (uint256) {
-        uint256 snapshotBlock = _self.proposalBlockNumber[_proposalId];
+        uint256 snapshotBlock = _self.proposalBlock[_proposalId];
         return _self.balanceAt[_user][snapshotBlock];
     }
 }
