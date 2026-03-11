@@ -36,7 +36,13 @@ interface IProposal {
 
     function getProposalById(bytes32 _proposalId) external returns (Proposal memory);
 
-    function queueProposal(bytes32 _proposalId) external;
+    function queueProposal(
+        bytes32 _proposalId,
+        address[] calldata _signers,
+        bytes[] calldata _signatures,
+        uint256[] calldata _signerNonces,
+        uint256 _deadline
+    ) external;
 
     function cancelProposal(bytes32 _proposalId) external;
 

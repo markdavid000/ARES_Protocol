@@ -6,6 +6,8 @@ import "../libraries/SignatureAuth.sol";
 import "../libraries/AttackGaurd.sol";
 
 abstract contract Proposal is IProposal {
+    AttackGuard.Snapshot private _snapshot;
+
     mapping(bytes32 => Proposal) private _proposals;
     mapping(address => uint) private _nonces;
     mapping(address => bool) private _authorizedSigners;
@@ -62,6 +64,8 @@ abstract contract Proposal is IProposal {
             proposal_type: _proposalType
         });
 
+         AttackGuard.logSnapshot(_snapshot, proposalId);
+
         emit ProposalCreated(
             proposalId,
             _proposalType,
@@ -71,47 +75,59 @@ abstract contract Proposal is IProposal {
         return proposalId;
     }
 
-    function queueProposal(bytes32 _proposalId) external {
+    function queueProposal(bytes32 _proposalId, address[] calldata _signers,
+        bytes[] calldata _signatures,
+        uint256[] calldata _signerNonces,
+        uint256 _deadline) external {
         require(_proposals[_proposalId].time_created != 0, "proposal does not exist");
 
-        Proposal storage proposal = _proposals[_proposalId];
+        Proposal storage proposal_ = _proposals[_proposalId];
 
-        require(proposal.proposal_status == ProposalState.PENDING, "proposal is not pending");
+        require(proposal_.proposal_status == ProposalState.PENDING, "proposal is not pending");
 
         require(
-            block.timestamp >= proposal.time_created + COMMIT_DELAY,
+            block.timestamp >= proposal_.time_created + COMMIT_DELAY,
             "still in commit phase"
         );
 
-        proposal.proposal_status = ProposalState.QUEUED;
+        require(
+            SignatureAuth.verifyThreshold(_proposalId, _signers, _signatures, _signerNonces, _deadline, _quorum),
+            "insufficient signatures"
+        );
 
-        emit ProposalQueued(_proposalId, proposal.proposal_status);
+        for (uint256 i = 0; i < _signers.length; i++) {
+            _nonces[_signers[i]]++;
+        }
+
+        proposal_.proposal_status = ProposalState.QUEUED;
+
+        emit ProposalQueued(_proposalId, proposal_.proposal_status);
     }
 
     function cancelProposal(bytes32 _proposalId) external {
         require(_proposals[_proposalId].time_created != 0, "proposal does not exist");
 
-        Proposal storage proposal = _proposals[_proposalId];
+        Proposal storage proposal_ = _proposals[_proposalId];
 
         require(
-            proposal.proposal_status == ProposalState.PENDING ||
-            proposal.proposal_status == ProposalState.QUEUED,
+            proposal_.proposal_status == ProposalState.PENDING ||
+            proposal_.proposal_status == ProposalState.QUEUED,
             "proposal cannot be cancelled"
         );
 
         require(
-            proposal.proposer == msg.sender || _authorizedSigners[msg.sender],
+            proposal_.proposer == msg.sender || _authorizedSigners[msg.sender],
             "not authorized to cancel"
         );
 
-        proposal.proposal_status = ProposalState.CANCELED;
+        proposal_.proposal_status = ProposalState.CANCELED;
 
-        uint256 deposit = _deposits[_proposalId];
+        uint256 deposit_ = _deposits[_proposalId];
         delete _deposits[_proposalId];
-        (bool success, ) = payable(proposal.proposer).call{value: deposit}("");
+        (bool success, ) = payable(proposal_.proposer).call{value: deposit_}("");
         require(success, "refund failed");
 
-        emit ProposalCanceled(_proposalId, proposal.proposal_status);
+        emit ProposalCanceled(_proposalId, proposal_.proposal_status);
     }
 
     function getProposal(bytes32 _proposalId) 
@@ -124,8 +140,8 @@ abstract contract Proposal is IProposal {
     }
 
     function isReadyToQueue(bytes32 _proposalId) external view returns (bool) {
-        Proposal storage proposal = _proposals[_proposalId];
-        require(proposal.time_created != 0, "proposal does not exist");
-        return block.timestamp >= proposal.time_created + COMMIT_DELAY;
+        Proposal storage proposal_ = _proposals[_proposalId];
+        require(proposal_.time_created != 0, "proposal does not exist");
+        return block.timestamp >= proposal_.time_created + COMMIT_DELAY;
     }
 }
