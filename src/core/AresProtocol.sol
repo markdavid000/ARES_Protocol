@@ -52,15 +52,38 @@ contract AresProtocol {
     function executeProposal(
         address _target,
         uint256 _value,
-        bytes calldata _data
+        bytes calldata _data,
+        IProposal.ProposalType _proposalType
     ) external onlyTimelock returns (bool) {
         require(_target != address(0), "invalid target");
 
-        (bool success, ) = _target.call{value: _value}(_data);
-        require(success, "execution failed");
+        if (_proposalType == IProposal.ProposalType.TRANSFER) {
+            (address recipient, uint256 amount) = abi.decode(_data, (address, uint256));
+            require(
+                governanceToken.transfer(recipient, amount),
+                "transfer failed"
+            );
+
+        } else if (_proposalType == IProposal.ProposalType.CALL) {
+            (bool success, ) = _target.call{value: _value}(_data);
+            require(success, "call failed");
+
+        } else if (_proposalType == IProposal.ProposalType.UPGRADE) {
+            (address newImplementation) = abi.decode(_data, (address));
+            (bool success, ) = _target.call(
+                abi.encodeWithSignature(
+                    "upgradeTo(address)",
+                    newImplementation
+                )
+            );
+            require(success, "upgrade failed");
+
+        } else {
+            revert("unknown proposal type");
+        }
 
         emit ProposalExecuted(_target, _value, _data);
-        return success;
+        return true;
     }
 
     function depositToken(uint256 _amount) external {

@@ -77,7 +77,7 @@ contract TimelockEng is ITimelockEng {
 
         entry_.timelockStatus = TimelockedState.EXECUTED;
 
-        IAresProtocol(_treasury).executeProposal(proposal_.target, proposal_.value, proposal_.data);
+        IAresProtocol(_treasury).executeProposal(proposal_.target, proposal_.value, proposal_.data, proposal_.proposal_type);
 
         emit TimelockedExecuted(_proposalId, TimelockedState.EXECUTED);
     }
