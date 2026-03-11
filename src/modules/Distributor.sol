@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "../interfaces/IDistributor.sol";
 import "../interfaces/IERC20.sol";
 
-abstract contract MerkleDistributor is IDistributor {
+contract Distributor is IDistributor {
 
     IERC20 private _token;
     bytes32 private _merkleRoot;
@@ -42,7 +42,7 @@ abstract contract MerkleDistributor is IDistributor {
         emit RootUpdated(oldRoot, _newRoot);
     }
 
-    function hasClaimed(address _recipient) external view returns (bool) {
+    function hasClaimedReward(address _recipient) external view returns (bool) {
         return _claimed[_recipient];
     }
 

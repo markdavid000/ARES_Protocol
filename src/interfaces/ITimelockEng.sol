@@ -19,15 +19,11 @@ interface ITimelockEng {
     event TimelockedExecuted(bytes32 indexed proposalId, TimelockedState timelockState);
     event TimelockedCanceled(bytes32 indexed proposalId, TimelockedState timelockState);
 
-    function getTimestamp(bytes32 _proposalId) external view returns (uint);
+    function queue(bytes32 _proposalId) external;
 
-    function queueProposal(bytes32 _proposalId) external;
+    function execute(bytes32 _proposalId) external;
 
-    function executeProposal(bytes32 _proposalId) external;
-
-    function cancelProposal(bytes32 _proposalId) external;
-
-    function getTimelockStatus(bytes32 _proposalId) external;
+    function cancel(bytes32 _proposalId) external;
 
     function readyToExecute(bytes32 _proposalId) external view returns (bool);
 }

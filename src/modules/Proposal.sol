@@ -5,7 +5,7 @@ import "../interfaces/IProposal.sol";
 import "../libraries/SignatureAuth.sol";
 import "../libraries/AttackGaurd.sol";
 
-abstract contract Proposal is IProposal {
+contract Proposal is IProposal {
     AttackGuard.Snapshot private _snapshot;
 
     mapping(bytes32 => Proposal) private _proposals;
@@ -137,7 +137,7 @@ abstract contract Proposal is IProposal {
         emit ProposalCanceled(_proposalId, proposal_.proposal_status);
     }
 
-    function getProposal(bytes32 _proposalId) 
+    function getProposalById(bytes32 _proposalId) 
         external 
         view 
         returns (Proposal memory) 
@@ -146,7 +146,7 @@ abstract contract Proposal is IProposal {
         return _proposals[_proposalId];
     }
 
-    function isReadyToQueue(bytes32 _proposalId) external view returns (bool) {
+    function readyToQueue(bytes32 _proposalId) external view returns (bool) {
         Proposal storage proposal_ = _proposals[_proposalId];
         require(proposal_.time_created != 0, "proposal does not exist");
         return block.timestamp >= proposal_.time_created + COMMIT_DELAY;

@@ -6,7 +6,7 @@ import "../interfaces/IAresProtocol.sol";
 import "../interfaces/IProposal.sol";
 import "../libraries/AttackGaurd.sol";
 
-abstract contract TimelockEng is ITimelockEng {
+contract TimelockEng is ITimelockEng {
 
     mapping(bytes32 => Timelocked) private _entries;
 
@@ -63,7 +63,7 @@ abstract contract TimelockEng is ITimelockEng {
     }
 
 
-    function executeTimelocked(bytes32 _proposalId) external nonReentrant {
+    function execute(bytes32 _proposalId) external nonReentrant {
         Timelocked storage entry_ = _entries[_proposalId];
 
         require(entry_.startedAt != 0, "entry does not exist");
@@ -82,7 +82,7 @@ abstract contract TimelockEng is ITimelockEng {
         emit TimelockedExecuted(_proposalId, TimelockedState.EXECUTED);
     }
 
-    function cancelTimelocked(bytes32 _proposalId) external {
+    function cancel(bytes32 _proposalId) external {
         Timelocked storage entry_ = _entries[_proposalId];
 
         require(entry_.startedAt != 0, "entry does not exist");
@@ -102,7 +102,7 @@ abstract contract TimelockEng is ITimelockEng {
         return _entries[_proposalId];
     }
 
-    function isReadyToExecute(bytes32 _proposalId) external view returns (bool) {
+    function readyToExecute(bytes32 _proposalId) external view returns (bool) {
         Timelocked storage entry_ = _entries[_proposalId];
         return
             entry_.startedAt != 0 &&
