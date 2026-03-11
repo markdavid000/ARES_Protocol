@@ -34,7 +34,7 @@ contract Proposal is IProposal {
         bytes calldata _data,
         uint256 _value,
         string calldata _description,
-        IProposal.ProposalType _proposalType
+        ProposalType _proposalType
     ) external payable returns (bytes32) {
         require(msg.value >= PROPOSAL_DEPOSIT, "insufficient deposit");
 
