@@ -1,12 +1,12 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.23;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
-import "../interfaces/ITimeLockEngine.sol";
+import "../interfaces/ITimeLockEng.sol";
 import "../interfaces/IAresProtocol.sol";
 import "../interfaces/IProposal.sol";
 import "../libraries/AttackGaurd.sol";
 
-abstract contract TimelockEngine is ITimelockEngine {
+abstract contract TimelockEng is ITimelockEng {
 
     mapping(bytes32 => Timelocked) private _entries;
 

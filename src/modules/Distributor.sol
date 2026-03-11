@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.23;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
 import "../interfaces/IDistributor.sol";
 import "../interfaces/IERC20.sol";
