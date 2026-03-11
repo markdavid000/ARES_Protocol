@@ -9,7 +9,7 @@ A common governance exploit involves borrowing a large amount of tokens through 
 this is prevents by using a snapshot mechanism that records token balances at the moment a proposal is created. Because the snapshot captures balances before the flash-loan transaction finishes, temporarily borrowed tokens are not counted toward governance power.
 
 ```solidity
-AttackGuards.recordSnapshot(_snapshot, proposalId);
+AttackGuards.logSnapshot(_snapshot, proposalId);
 ```
 
 #### 2. Signature Replay
@@ -46,7 +46,7 @@ The proposal status is updated to `EXECUTED` before the external call is made.
 This ensures the proposal cannot be executed more than once.
 
 ```solidity
-entry.status = TimeLockStatus.EXECUTED;
+entry.timelockStatus = TimelockedState.EXECUTED;
 IAresProtocol(_treasury).executeProposal(...);
 ```
 
@@ -57,7 +57,7 @@ An attacker might try to pass a proposal that withdraws the entire treasury in o
 To reduce this risk, the protocol implements a daily withdrawal limit. Even if a proposal is approved, the total amount withdrawn within a 24-hour window cannot exceed a predefined threshold.
 
 ```solidity
-require(_self.spentToday + _amount <= _self.maxDailyLimit, "daily limit exceeded");
+require(_self.spentToday + _amount <= _self.dailyLimit, "daily limit exceeded");
 ```
 
 #### 6. Proposal Griefing
@@ -81,8 +81,8 @@ _claimed[_recipient] = true;
 
 Someone might attempt to execute a proposal before the required timelock delay has passed.
 
-The protocol enforces this strictly using the `executableAt` timestamp.
+The protocol enforces this strictly using the `startedAt` timestamp.
 
 ```solidity
-require(block.timestamp >= entry.executableAt, "delay not passed");
+require(block.timestamp >= entry.startedAt, "delay not passed");
 ```
