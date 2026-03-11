@@ -232,9 +232,7 @@ contract AresProtocolTest is Test {
         string memory _desc,
         uint256 _amount
     ) internal returns (bytes32) {
-        bytes memory data = abi.encodeWithSignature(
-            "transfer(address,uint256)", levi, _amount
-        );
+        bytes memory data = abi.encode(levi, _amount);
         vm.prank(mark);
         return proposal.createProposal{value: 1 ether}(
             address(usdcAddr),
