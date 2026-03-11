@@ -12,7 +12,7 @@ abstract contract TimelockEngine is ITimelockEngine {
     IProposal private _proposal;
     address private _treasury;
 
-    uint256 public constant TIMELOCK_DELAY = 48 hours;
+    uint256 public constant TIMELOCK_DELAY = 24 hours;
 
     bool private _locked;
 
@@ -27,26 +27,26 @@ abstract contract TimelockEngine is ITimelockEngine {
 
 
     constructor(
-        address _proposalMgAddr,
+        address _proposalAddr,
         address _treasuryAddr,
-        uint256 _maxDailyLimit
+        uint256 _dailyLimit
     ) {
-        _proposal = IProposal(_proposalMgAddr);
+        _proposal = IProposal(_proposalAddr);
         _treasury = _treasuryAddr;
 
 
-        _rateLimit.dailyLimit = _maxDailyLimit;
+        _rateLimit.dailyLimit = _dailyLimit;
         _rateLimit.windowStart = block.timestamp;
         _rateLimit.spentToday = 0;
     }
 
     function queue(bytes32 _proposalId) external {
-        IProposal.Proposal memory proposal = _proposal.getProposalById(_proposalId);
+        IProposal.Proposal memory proposal_ = _proposal.getProposalById(_proposalId);
 
-        require(proposal.time_created != 0, "proposal does not exist");
+        require(proposal_.time_created != 0, "proposal does not exist");
 
         require(
-            proposal.proposal_status == IProposal.ProposalState.QUEUED,
+            proposal_.proposal_status == IProposal.ProposalState.QUEUED,
             "proposal not queued"
         );
 
@@ -62,33 +62,33 @@ abstract contract TimelockEngine is ITimelockEngine {
     }
 
 
-    function execute(bytes32 _proposalId) external nonReentrant {
-        Timelocked storage entry = _entries[_proposalId];
+    function executeTimelocked(bytes32 _proposalId) external nonReentrant {
+        Timelocked storage entry_ = _entries[_proposalId];
 
-        require(entry.startedAt != 0, "entry does not exist");
-        require(entry.timelockStatus == TimelockedState.QUEUED, "not queued");
-        require(block.timestamp >= entry.startedAt, "delay not passed");
+        require(entry_.startedAt != 0, "entry does not exist");
+        require(entry_.timelockStatus == TimelockedState.QUEUED, "not queued");
+        require(block.timestamp >= entry_.startedAt, "delay not passed");
 
-        IProposal.Proposal memory proposal = _proposal.getProposalById(_proposalId);
+        IProposal.Proposal memory proposal_ = _proposal.getProposalById(_proposalId);
 
 
-        AttackGuard.applyDailyLimit(_rateLimit, proposal.value);
+        AttackGuard.applyDailyLimit(_rateLimit, proposal_.value);
 
-        entry.timelockStatus = TimelockedState.EXECUTED;
+        entry_.timelockStatus = TimelockedState.EXECUTED;
 
-        (bool success, ) = _treasury.call{value: proposal.value}(proposal.data);
+        (bool success, ) = _treasury.call{value: proposal_.value}(proposal_.data);
         require(success, "execution failed");
 
         emit TimelockedExecuted(_proposalId, TimelockedState.EXECUTED);
     }
 
-    function cancel(bytes32 _proposalId) external {
-        Timelocked storage entry = _entries[_proposalId];
+    function cancelTimelocked(bytes32 _proposalId) external {
+        Timelocked storage entry_ = _entries[_proposalId];
 
-        require(entry.startedAt != 0, "entry does not exist");
-        require(entry.timelockStatus == TimelockedState.QUEUED, "not queued");
+        require(entry_.startedAt != 0, "entry does not exist");
+        require(entry_.timelockStatus == TimelockedState.QUEUED, "not queued");
 
-        entry.timelockStatus = TimelockedState.CANCELED;
+        entry_.timelockStatus = TimelockedState.CANCELED;
 
         emit TimelockedCanceled(_proposalId, TimelockedState.CANCELED);
     }
@@ -103,10 +103,10 @@ abstract contract TimelockEngine is ITimelockEngine {
     }
 
     function isReadyToExecute(bytes32 _proposalId) external view returns (bool) {
-        Timelocked storage entry = _entries[_proposalId];
+        Timelocked storage entry_ = _entries[_proposalId];
         return
-            entry.startedAt != 0 &&
-            entry.timelockStatus == TimelockedState.QUEUED &&
-            block.timestamp >= entry.startedAt;
+            entry_.startedAt != 0 &&
+            entry_.timelockStatus == TimelockedState.QUEUED &&
+            block.timestamp >= entry_.startedAt;
     }
 }
