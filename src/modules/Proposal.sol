@@ -90,6 +90,13 @@ abstract contract Proposal is IProposal {
             "still in commit phase"
         );
 
+        for (uint256 i = 0; i < _signers.length; i++) {
+            require(
+                _authorizedSigners[_signers[i]],
+                "insufficient signatures"  
+            );
+        }
+
         require(
             SignatureAuth.verifyThreshold(_proposalId, _signers, _signatures, _signerNonces, _deadline, _quorum),
             "insufficient signatures"

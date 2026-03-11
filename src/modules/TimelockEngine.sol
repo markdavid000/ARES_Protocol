@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import "../interfaces/ITimeLockEngine.sol";
+import "../interfaces/IAresProtocol.sol";
 import "../interfaces/IProposal.sol";
 import "../libraries/AttackGaurd.sol";
 
@@ -76,8 +77,7 @@ abstract contract TimelockEngine is ITimelockEngine {
 
         entry_.timelockStatus = TimelockedState.EXECUTED;
 
-        (bool success, ) = _treasury.call{value: proposal_.value}(proposal_.data);
-        require(success, "execution failed");
+        IAresProtocol(_treasury).executeProposal(proposal_.target, proposal_.value, proposal_.data);
 
         emit TimelockedExecuted(_proposalId, TimelockedState.EXECUTED);
     }
